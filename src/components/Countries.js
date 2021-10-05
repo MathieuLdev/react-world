@@ -1,0 +1,47 @@
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import Card from "./Card";
+
+const Countries = () => {
+	const [data, setData] = useState([]);
+   const [rangeValue, setRangeValue] = useState(40);
+   const [selectedRadio, setSelectedRadio] = useState('');
+   const radios = ['Africa', 'America', 'Asia', 'Europe', 'Oceania'];
+
+	useEffect(() => {
+		axios
+			.get("https://restcountries.com/v3.1/all")
+			.then((res) => setData(res.data));
+	}, [data, rangeValue]);
+
+   data.sort((a, b) => {return b.population - a.population});
+   data.length = rangeValue;
+
+	return (
+		<div className="countries">
+         <div className="sort-container">
+            <input type="range" min="1" max="250" value={rangeValue} onChange={(e) => setRangeValue(e.target.value)}/>
+            <ul>{radios.map((radio) => {
+               return (
+                  <li key={radio}>
+                     <input type="radio" value={radio} id={radio} checked={radio === selectedRadio} onChange={(e) => setSelectedRadio(e.target.value)}/>
+                     <label htmlFor={radio}>{radio}</label>
+                  </li>
+               )
+            })}</ul>
+         </div>
+         <div className="cancel">
+            {selectedRadio && <h5 onClick={() => setSelectedRadio("")}>Annuler rechercher</h5>}
+         </div>
+			<ul className="countries-list">
+				{data
+            .filter((country) => country.region.includes(selectedRadio))
+            .map((country) => (
+					<Card country={country} key={country.cca2}/>
+				))}
+			</ul>
+		</div>
+	);
+};
+
+export default Countries;
